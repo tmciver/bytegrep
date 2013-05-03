@@ -55,6 +55,8 @@ public class RegularExpressionTest {
         // create the regular expression
         RegularExpression re = new LiteralByte(literal);
         
+        System.out.println("Literal: " + re);
+        
         // the first byte should match
         Assert.assertTrue(re.match(in));
 
@@ -72,6 +74,8 @@ public class RegularExpressionTest {
         
         // create an AlternationExpression from them
         RegularExpression ae = new AlternationExpression(literal1, literal2);
+        
+        System.out.println("Alternation: " + ae);
         
         // create a ByteArrayInputStream whose first byte will match literal1
         InputStream in1 = new ByteArrayInputStream(new byte[]{literal1.getLiteralByte(), (byte)0x8F, (byte)0x25});
@@ -110,6 +114,8 @@ public class RegularExpressionTest {
         RegularExpression re2 = new SequenceExpression(literal2, literal3);
         RegularExpression seq = new SequenceExpression(literal1, re2);
         
+        System.out.println("Sequence: " + seq);
+        
         // create a ByteArrayInputStream from these byte literals
         InputStream in1 = new ByteArrayInputStream(new byte[]{literal1.getLiteralByte(), literal2.getLiteralByte(), literal3.getLiteralByte()});
         
@@ -132,6 +138,8 @@ public class RegularExpressionTest {
         
         // create a RepetitionExpression from it
         RegularExpression re = new RepetitionExpression(literal, 1, 10);
+        
+        System.out.println("Repetition: " + re);
         
         // create a ByteArrayInputStream whose first byte will match the repetition
         InputStream in1 = new ByteArrayInputStream(new byte[]{literal.getLiteralByte(), (byte)0x8F, (byte)0x25});

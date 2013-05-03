@@ -34,5 +34,10 @@ public class LiteralByte extends RegularExpression {
     public byte getLiteralByte() {
         return literal;
     }
+
+    @Override
+    public String toString() {
+        return String.format("0x%2X", literal);
+    }
     
 }

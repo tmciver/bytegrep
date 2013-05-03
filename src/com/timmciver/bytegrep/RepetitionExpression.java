@@ -58,5 +58,16 @@ public class RepetitionExpression extends RegularExpression {
         // it's a match no matter what now
         return true;
     }
+
+    @Override
+    public String toString() {
+        char repChar = '*';
+        if (minMatches == 0 && maxMatches == 1) {
+            repChar = '?';
+        } else if (minMatches == 1) {
+            repChar = '+';
+        }
+        return "(" + expr + ")" + repChar;
+    }
     
 }

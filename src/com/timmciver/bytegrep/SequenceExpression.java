@@ -21,5 +21,10 @@ public class SequenceExpression extends RegularExpression {
     protected boolean internalMatch(InputStream in) {
         return expr1.match(in) && expr2.match(in);
     }
+
+    @Override
+    public String toString() {
+        return expr1.toString() + expr2.toString();
+    }
     
 }
