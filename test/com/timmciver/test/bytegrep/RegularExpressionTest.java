@@ -6,6 +6,7 @@ package com.timmciver.test.bytegrep;
 
 import com.timmciver.bytegrep.AlternationExpression;
 import com.timmciver.bytegrep.LiteralByte;
+import com.timmciver.bytegrep.OneOrMore;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.RepetitionExpression;
 import com.timmciver.bytegrep.SequenceExpression;
@@ -134,10 +135,9 @@ public class RegularExpressionTest {
         
         // create a couple of literal bytes
         LiteralByte literal = new LiteralByte((byte)0xAA);
-        //LiteralByte literal2 = new LiteralByte((byte)0xAB);
         
         // create a RepetitionExpression from it
-        RegularExpression re = new RepetitionExpression(literal, 1, 10);
+        RegularExpression re = new OneOrMore(literal);
         
         System.out.println("Repetition: " + re);
         
