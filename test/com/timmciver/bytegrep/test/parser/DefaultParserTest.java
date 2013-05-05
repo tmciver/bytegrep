@@ -64,6 +64,31 @@ public class DefaultParserTest {
         if (lb.getLiteralByte() != (byte)0xBA) {
             fail();
         }
+    }
+    
+    @Test
+    public void testParseGrouping() {
         
+        // create the string to be parsed
+        String str = "(0xBA)";
+        
+        // parse it
+        Parser parser = new DefaultParser();
+        RegularExpression re = parser.parse(str);
+        
+        // check the RegularExpression
+        if (re == null) {
+            fail();
+        }
+        
+        if (!(re instanceof LiteralByte)) {
+            fail();
+        }
+        
+        LiteralByte lb = (LiteralByte)re;
+        
+        if (lb.getLiteralByte() != (byte)0xBA) {
+            fail();
+        }
     }
 }

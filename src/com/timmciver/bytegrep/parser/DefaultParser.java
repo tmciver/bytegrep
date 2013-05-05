@@ -18,6 +18,7 @@ import java.util.logging.Logger;
  * the grammar accepted by this parser.
  * 
  * R := byte-literal
+ *    | (R)              // grouping
  * 
  * byte-literal defines a single byte and has the form '0xXY' where X and Y
  * represent hexadecimal digits.
@@ -30,6 +31,8 @@ public class DefaultParser implements Parser {
     
     private Set<Character> firstOfByteLiteral = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(new Character[]{'0'})));
+    private Set<Character> firstOfGrouping = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(new Character[]{'('})));
 
     @Override
     public RegularExpression parse(String s) {
@@ -41,8 +44,8 @@ public class DefaultParser implements Parser {
         try {
             // parse and return the regular expression from the PushbackReader
             regex = parseRegularExpression(reader);
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, "IOException while reading from PushbackReader.");
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, ex.toString());
         }
         
         return regex;
@@ -56,14 +59,17 @@ public class DefaultParser implements Parser {
         // and immediately push it back
         reader.unread(next);
         
-        // since we're only parsing byte literals for now we only need to check 
-        // that the next character is in the first of a byte literal.
-        if (!firstOfByteLiteral.contains(next)) {
-            logger.log(Level.SEVERE, "Expexted byte literal of the form '0xXY'");
-            return null;
+        // decide which right hand side to use based on the next input character
+        RegularExpression re = null;
+        if (firstOfByteLiteral.contains(next)) {
+            re = parseByteLiteral(reader);
+        } else if (firstOfGrouping.contains(next)) {
+            re = parseGrouping(reader);
+        } else {
+            logger.log(Level.SEVERE, "Could not parse input string.");
         }
 
-        return parseByteLiteral(reader);
+        return re;
     }
     
     private RegularExpression parseByteLiteral(PushbackReader reader) throws IOException {
@@ -97,5 +103,25 @@ public class DefaultParser implements Parser {
         
         // return a LiteralByte regex
         return new LiteralByte(byteVal);
+    }
+    
+    private RegularExpression parseGrouping(PushbackReader reader) throws IOException {
+        
+        // make sure the next character is '('
+        char next = (char)reader.read();
+        if (next != '(') {
+            throw new RuntimeException("Expected '(' but read '" + next + "'");
+        }
+        
+        // parse the grouped regular expression
+        RegularExpression re = parseRegularExpression(reader);
+        
+        // make sure the next character is ')'
+        next = (char)reader.read();
+        if (next != ')') {
+            throw new RuntimeException("Expected ')' but read '" + next + "'");
+        }
+        
+        return re;
     }
 }
