@@ -57,20 +57,20 @@ public class DefaultParser implements Parser {
     }
 
     @Override
-    public RegularExpression parse(String s) {
+    public RegularExpression parse(String s) throws IOException {
         
         // create a PushbackReader from the given string
         PushbackReader reader = new PushbackReader(new StringReader(s), 10);
         
-        RegularExpression regex = null;
-        try {
-            // parse and return the regular expression from the PushbackReader
-            regex = parseR(reader);
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, ex.toString());
+        RegularExpression re = parseR(reader);
+        
+        // it's an error if we're not at the end of the stream here
+        int next = reader.read();
+        if (next != -1) {
+            throw new MalformedInputException("Expected EOF but found next character: " + next);
         }
         
-        return regex;
+        return re;
     }
     
     private RegularExpression parseR(PushbackReader reader) throws IOException {
@@ -110,7 +110,8 @@ public class DefaultParser implements Parser {
         return re;
     }
     
-    private RegularExpression parseT(RegularExpression re, PushbackReader reader) {
+    private RegularExpression parseT(RegularExpression re, PushbackReader reader) throws IOException {
+
         // for now we'll just return the passed-in regular expression
         return re;
     }

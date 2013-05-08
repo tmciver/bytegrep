@@ -2,6 +2,7 @@
 package com.timmciver.bytegrep.parser;
 
 import com.timmciver.bytegrep.RegularExpression;
+import java.io.IOException;
 
 /**
  *
@@ -14,6 +15,6 @@ public interface Parser {
      * @param s the string to parse
      * @return the RegularExpression
      */
-    RegularExpression parse(String s);
+    RegularExpression parse(String s) throws IOException;
     
 }

@@ -7,7 +7,9 @@ package com.timmciver.bytegrep.test.parser;
 import com.timmciver.bytegrep.LiteralByte;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.parser.DefaultParser;
+import com.timmciver.bytegrep.parser.MalformedInputException;
 import com.timmciver.bytegrep.parser.Parser;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -48,7 +50,12 @@ public class DefaultParserTest {
         
         // parse it
         Parser parser = new DefaultParser();
-        RegularExpression re = parser.parse(str);
+        RegularExpression re = null;
+        try {
+            re = parser.parse(str);
+        } catch (IOException ex) {
+            fail();
+        }
         
         // check the RegularExpression
         if (re == null) {
@@ -67,6 +74,39 @@ public class DefaultParserTest {
     }
     
     @Test
+    public void testMalformedByteLiteral() {
+        
+        // create a malformed string to be parsed
+        String str = "0xBG";
+        
+        // create the parser
+        Parser parser = new DefaultParser();
+        
+        // try parsing it
+        try {
+            RegularExpression re = parser.parse(str);
+            fail();
+        } catch (IOException ex) {
+            if (!(ex instanceof MalformedInputException)) {
+                fail();
+            }
+        }
+        
+        // again with a different malformed string
+        str = "0zAB";
+        
+        // try parsing it
+        try {
+            RegularExpression re = parser.parse(str);
+            fail();
+        } catch (IOException ex) {
+            if (!(ex instanceof MalformedInputException)) {
+                fail();
+            }
+        }
+    }
+    
+    @Test
     public void testParseGrouping() {
         
         // create the string to be parsed
@@ -74,7 +114,12 @@ public class DefaultParserTest {
         
         // parse it
         Parser parser = new DefaultParser();
-        RegularExpression re = parser.parse(str);
+        RegularExpression re = null;
+        try {
+            re = parser.parse(str);
+        } catch (IOException ex) {
+            fail();
+        }
         
         // check the RegularExpression
         if (re == null) {
@@ -89,6 +134,37 @@ public class DefaultParserTest {
         
         if (lb.getLiteralByte() != (byte)0xBA) {
             fail();
+        }
+    }
+    
+    @Test
+    public void testParseMalformedGrouping() {
+        
+        // create a malformed string to be parsed
+        String str = "0xBA)";
+        
+        // parse it
+        Parser parser = new DefaultParser();
+        RegularExpression re = null;
+        try {
+            re = parser.parse(str);
+            fail();
+        } catch (IOException ex) {
+            if (!(ex instanceof MalformedInputException)) {
+                fail();
+            }
+        }
+        
+        // again with a differenct malformed string
+        str = "(0xBA";
+        
+        try {
+            re = parser.parse(str);
+            fail();
+        } catch (IOException ex) {
+            if (!(ex instanceof MalformedInputException)) {
+                fail();
+            }
         }
     }
 }
