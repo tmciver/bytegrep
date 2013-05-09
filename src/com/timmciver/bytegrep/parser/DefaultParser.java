@@ -3,6 +3,7 @@ package com.timmciver.bytegrep.parser;
 
 import com.timmciver.bytegrep.LiteralByte;
 import com.timmciver.bytegrep.RegularExpression;
+import com.timmciver.bytegrep.SequenceExpression;
 import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.StringReader;
@@ -37,11 +38,9 @@ import java.util.logging.Logger;
 public class DefaultParser implements Parser {
     
     private final static Logger logger = Logger.getLogger(DefaultParser.class.getName());
-    
-    // a set representing first(S)
+
+    private Set<Character> firstOfR;
     private Set<Character> firstOfS;
-    
-    // a set representing first(T)
     private Set<Character> firstOfT;
 
     public DefaultParser() {
@@ -54,6 +53,9 @@ public class DefaultParser implements Parser {
         firstOfT = new HashSet<>(firstOfS);     // first(T) contains first(S), plus some other stuff
         firstOfT.addAll(Arrays.asList('|', '*', '+', '?', '$'));
         firstOfT = Collections.unmodifiableSet(firstOfT);
+        
+        // first(R) = first(S) since S is not nullable
+        firstOfR = firstOfS;
     }
 
     @Override
@@ -110,10 +112,33 @@ public class DefaultParser implements Parser {
         return re;
     }
     
-    private RegularExpression parseT(RegularExpression re, PushbackReader reader) throws IOException {
+    private RegularExpression parseT(RegularExpression inRegex, PushbackReader reader) throws IOException {
+        
+        // read the next character of input
+        int next = reader.read();
+        char nextChar = (char)next;
+        
+        // check of end-of-input
+        if (next == -1) {
+            nextChar = '$';
+        } else {
+            // push back the read char if we're not at the end
+            reader.unread(next);
+        }
+        
+        RegularExpression outRegex = null;
+        
+        // which T production to use?
+        if (firstOfR.contains(nextChar)) {
+            RegularExpression fromR = parseR(reader);
+            outRegex = new SequenceExpression(inRegex, fromR);
+        } else {
+            // do nothing otherwise, for now
+            outRegex = inRegex;
+        }
 
         // for now we'll just return the passed-in regular expression
-        return re;
+        return outRegex;
     }
     
     private RegularExpression parseByteLiteral(PushbackReader reader) throws IOException {

@@ -22,6 +22,14 @@ public class SequenceExpression extends RegularExpression {
         return expr1.match(in) && expr2.match(in);
     }
 
+    public RegularExpression getFirstExpression() {
+        return expr1;
+    }
+
+    public RegularExpression getSecondExpression() {
+        return expr2;
+    }
+
     @Override
     public String toString() {
         return expr1.toString() + expr2.toString();
