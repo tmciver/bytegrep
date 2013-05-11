@@ -132,8 +132,11 @@ public class DefaultParser implements Parser {
         if (firstOfR.contains(nextChar)) {
             RegularExpression fromR = parseR(reader);
             outRegex = new SequenceExpression(inRegex, fromR);
+        } else if (nextChar == '$') {
+            // end of input; we're done
+            outRegex = inRegex;
         } else {
-            // do nothing otherwise, for now
+            // just return inRegex
             outRegex = inRegex;
         }
 
