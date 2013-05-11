@@ -62,7 +62,7 @@ public class DefaultParser implements Parser {
     public RegularExpression parse(String s) throws IOException {
         
         // create a PushbackReader from the given string
-        PushbackReader reader = new PushbackReader(new StringReader(s), 10);
+        PushbackReader reader = new PushbackReader(new StringReader(s));
         
         RegularExpression re = parseR(reader);
         
