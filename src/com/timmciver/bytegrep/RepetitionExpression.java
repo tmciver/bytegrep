@@ -69,5 +69,37 @@ public class RepetitionExpression extends RegularExpression {
         }
         return "(" + expr + ")" + repChar;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        
+        if (obj == null) {
+            return false;
+        }
+        
+        if (this == obj) {
+            return true;
+        }
+        
+        if (!(obj instanceof RepetitionExpression)) {
+            return false;
+        }
+        
+        RepetitionExpression re = (RepetitionExpression)obj;
+        
+        // check min and max matches
+        if (minMatches != re.minMatches ||
+                maxMatches != re.maxMatches) {
+            return false;
+        }
+        
+        // check the right expression
+        return expr.equals(re.expr);
+    }
+
+    @Override
+    public int hashCode() {
+        return expr.hashCode() + minMatches + maxMatches;
+    }
     
 }

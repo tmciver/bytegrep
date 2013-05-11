@@ -46,4 +46,10 @@ public abstract class RegularExpression {
      */
     protected abstract boolean internalMatch(InputStream in);
     
+    @Override
+    public abstract boolean equals(Object o);
+
+    @Override
+    public abstract int hashCode();
+    
 }

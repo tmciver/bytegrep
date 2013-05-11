@@ -22,9 +22,47 @@ public class AlternationExpression extends RegularExpression {
         return expr1.match(in) || expr2.match(in);
     }
 
+    public RegularExpression getFirstExpression() {
+        return expr1;
+    }
+
+    public RegularExpression getSecondExpression() {
+        return expr2;
+    }
+
     @Override
     public String toString() {
         return expr1 + "|" + expr2;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        
+        if (this == obj) {
+            return true;
+        }
+        
+        if (!(obj instanceof AlternationExpression)) {
+            return false;
+        }
+        
+        AlternationExpression ae = (AlternationExpression)obj;
+        
+        // check the left expression of both AlternationExpressions
+        if (!getFirstExpression().equals(ae.getFirstExpression())) {
+            return false;
+        }
+        
+        // check the right expression
+        return getSecondExpression().equals(ae.getSecondExpression());
+    }
+
+    @Override
+    public int hashCode() {
+        return expr1.hashCode() + expr2.hashCode();
     }
     
 }
