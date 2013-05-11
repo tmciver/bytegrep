@@ -3,9 +3,11 @@ package com.timmciver.bytegrep.parser;
 
 import com.timmciver.bytegrep.AlternationExpression;
 import com.timmciver.bytegrep.LiteralByte;
+import com.timmciver.bytegrep.OneOrMore;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.SequenceExpression;
 import com.timmciver.bytegrep.ZeroOrMore;
+import com.timmciver.bytegrep.ZeroOrOne;
 import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.StringReader;
@@ -146,6 +148,10 @@ public class DefaultParser implements Parser {
             // zero or more
             reader.read();    // consume the '*'
             outRegex = new ZeroOrMore(inRegex);
+        } else if (nextChar == '+') {
+            // one or more
+            reader.read();    // consume the '+'
+            outRegex = new OneOrMore(inRegex);
         } else {
             // just return inRegex
             outRegex = inRegex;

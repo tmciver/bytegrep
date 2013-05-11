@@ -3,6 +3,7 @@ package com.timmciver.bytegrep.test.parser;
 
 import com.timmciver.bytegrep.AlternationExpression;
 import com.timmciver.bytegrep.LiteralByte;
+import com.timmciver.bytegrep.OneOrMore;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.SequenceExpression;
 import com.timmciver.bytegrep.ZeroOrMore;
@@ -209,6 +210,30 @@ public class DefaultParserTest {
         
         // create a SequenceExpression from them
         RegularExpression exptected = new ZeroOrMore(literal1);
+        
+        // parse it
+        Parser parser = new DefaultParser();
+        RegularExpression actual = null;
+        try {
+            actual = parser.parse(str);
+        } catch (IOException ex) {
+            fail(ex.toString());
+        }
+        
+        assertTrue(actual.equals(exptected));
+    }
+    
+    @Test
+    public void testOneOrMore() {
+        
+        // create the string to be parsed
+        String str = "0xAA+";
+        
+        // build the expexted RegularExpression
+        LiteralByte literal1 = new LiteralByte((byte)0xAA);
+        
+        // create a SequenceExpression from them
+        RegularExpression exptected = new OneOrMore(literal1);
         
         // parse it
         Parser parser = new DefaultParser();
