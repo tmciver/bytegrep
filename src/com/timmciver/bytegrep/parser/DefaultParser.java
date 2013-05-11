@@ -5,6 +5,7 @@ import com.timmciver.bytegrep.AlternationExpression;
 import com.timmciver.bytegrep.LiteralByte;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.SequenceExpression;
+import com.timmciver.bytegrep.ZeroOrMore;
 import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.StringReader;
@@ -70,7 +71,7 @@ public class DefaultParser implements Parser {
         // it's an error if we're not at the end of the stream here
         int next = reader.read();
         if (next != -1) {
-            throw new MalformedInputException("Expected EOF but found next character: " + next);
+            throw new MalformedInputException("Expected EOF but found next character: " + (char)next);
         }
         
         return re;
@@ -119,7 +120,7 @@ public class DefaultParser implements Parser {
         int next = reader.read();
         char nextChar = (char)next;
         
-        // check of end-of-input
+        // check for end-of-input
         if (next == -1) {
             nextChar = '$';
         } else {
@@ -141,12 +142,15 @@ public class DefaultParser implements Parser {
             reader.read();    // re-read the '|' character to remove it from the input
             RegularExpression fromR = parseR(reader);
             outRegex = new AlternationExpression(inRegex, fromR);
+        } else if (nextChar == '*') {
+            // zero or more
+            reader.read();    // consume the '*'
+            outRegex = new ZeroOrMore(inRegex);
         } else {
             // just return inRegex
             outRegex = inRegex;
         }
 
-        // for now we'll just return the passed-in regular expression
         return outRegex;
     }
     
