@@ -152,6 +152,10 @@ public class DefaultParser implements Parser {
             // one or more
             reader.read();    // consume the '+'
             outRegex = new OneOrMore(inRegex);
+        } else if (nextChar == '?') {
+            // zero or one
+            reader.read();    // consume the '?'
+            outRegex = new ZeroOrOne(inRegex);
         } else {
             // just return inRegex
             outRegex = inRegex;

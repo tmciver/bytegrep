@@ -7,6 +7,7 @@ import com.timmciver.bytegrep.OneOrMore;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.SequenceExpression;
 import com.timmciver.bytegrep.ZeroOrMore;
+import com.timmciver.bytegrep.ZeroOrOne;
 import com.timmciver.bytegrep.parser.DefaultParser;
 import com.timmciver.bytegrep.parser.MalformedInputException;
 import com.timmciver.bytegrep.parser.Parser;
@@ -234,6 +235,30 @@ public class DefaultParserTest {
         
         // create a SequenceExpression from them
         RegularExpression exptected = new OneOrMore(literal1);
+        
+        // parse it
+        Parser parser = new DefaultParser();
+        RegularExpression actual = null;
+        try {
+            actual = parser.parse(str);
+        } catch (IOException ex) {
+            fail(ex.toString());
+        }
+        
+        assertTrue(actual.equals(exptected));
+    }
+    
+    @Test
+    public void testZeroOrOne() {
+        
+        // create the string to be parsed
+        String str = "0xAA?";
+        
+        // build the expexted RegularExpression
+        LiteralByte literal1 = new LiteralByte((byte)0xAA);
+        
+        // create a SequenceExpression from them
+        RegularExpression exptected = new ZeroOrOne(literal1);
         
         // parse it
         Parser parser = new DefaultParser();
