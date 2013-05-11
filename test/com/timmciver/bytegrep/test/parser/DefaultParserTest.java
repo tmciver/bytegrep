@@ -1,6 +1,7 @@
 
 package com.timmciver.bytegrep.test.parser;
 
+import com.timmciver.bytegrep.AlternationExpression;
 import com.timmciver.bytegrep.LiteralByte;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.SequenceExpression;
@@ -170,5 +171,30 @@ public class DefaultParserTest {
                 fail();
             }
         }
+    }
+    
+    @Test
+    public void testAlternationSequence() {
+        
+        // create the string to be parsed
+        String str = "0xAA|0xAB";
+        
+        // build the expexted RegularExpression
+        LiteralByte literal1 = new LiteralByte((byte)0xAA);
+        LiteralByte literal2 = new LiteralByte((byte)0xAB);
+        
+        // create a SequenceExpression from them
+        RegularExpression exptected = new AlternationExpression(literal1, literal2);
+        
+        // parse it
+        Parser parser = new DefaultParser();
+        RegularExpression actual = null;
+        try {
+            actual = parser.parse(str);
+        } catch (IOException ex) {
+            fail("Parse failed.");
+        }
+        
+        assertTrue(actual.equals(exptected));
     }
 }

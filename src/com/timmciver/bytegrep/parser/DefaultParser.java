@@ -1,6 +1,7 @@
 
 package com.timmciver.bytegrep.parser;
 
+import com.timmciver.bytegrep.AlternationExpression;
 import com.timmciver.bytegrep.LiteralByte;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.SequenceExpression;
@@ -135,6 +136,11 @@ public class DefaultParser implements Parser {
         } else if (nextChar == '$') {
             // end of input; we're done
             outRegex = inRegex;
+        } else if (nextChar == '|') {
+            // alternation
+            reader.read();    // re-read the '|' character to remove it from the input
+            RegularExpression fromR = parseR(reader);
+            outRegex = new AlternationExpression(inRegex, fromR);
         } else {
             // just return inRegex
             outRegex = inRegex;
