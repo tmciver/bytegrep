@@ -56,7 +56,7 @@ public class DefaultParserTest {
         try {
             actual = parser.parse(str);
         } catch (IOException ex) {
-            fail();
+            fail(ex.toString());
         }
         
         assertTrue(actual.equals(expected));
@@ -83,11 +83,10 @@ public class DefaultParserTest {
         try {
             actual = parser.parse(str);
         } catch (IOException ex) {
-            fail("Parse failed.");
+            fail(ex.toString());
         }
         
         assertTrue(actual.equals(exptected));
-
     }
     
     @Test
@@ -102,10 +101,10 @@ public class DefaultParserTest {
         // try parsing it
         try {
             RegularExpression re = parser.parse(str);
-            fail();
+            fail("Did not get expected exception.");
         } catch (IOException ex) {
             if (!(ex instanceof MalformedInputException)) {
-                fail();
+                fail("Got exception but was not expected type (MalformedInputException).");
             }
         }
         
@@ -115,10 +114,10 @@ public class DefaultParserTest {
         // try parsing it
         try {
             RegularExpression re = parser.parse(str);
-            fail();
+            fail("Did not get expected exception.");
         } catch (IOException ex) {
             if (!(ex instanceof MalformedInputException)) {
-                fail();
+                fail("Got exception but was not expected type (MalformedInputException).");
             }
         }
     }
@@ -137,7 +136,7 @@ public class DefaultParserTest {
         try {
             actual = parser.parse(str);
         } catch (IOException ex) {
-            fail();
+            fail(ex.toString());
         }
         
         assertTrue(actual.equals(exptected));
@@ -154,10 +153,10 @@ public class DefaultParserTest {
         RegularExpression re = null;
         try {
             re = parser.parse(str);
-            fail();
+            fail("Did not get expected exception.");
         } catch (IOException ex) {
             if (!(ex instanceof MalformedInputException)) {
-                fail();
+                fail("Got exception but was not expected type (MalformedInputException).");
             }
         }
         
@@ -166,10 +165,10 @@ public class DefaultParserTest {
         
         try {
             re = parser.parse(str);
-            fail();
+            fail("Did not get expected exception.");
         } catch (IOException ex) {
             if (!(ex instanceof MalformedInputException)) {
-                fail();
+                fail("Got exception but was not expected type (MalformedInputException).");
             }
         }
     }
@@ -193,7 +192,7 @@ public class DefaultParserTest {
         try {
             actual = parser.parse(str);
         } catch (IOException ex) {
-            fail("Parse failed.");
+            fail(ex.toString());
         }
         
         assertTrue(actual.equals(exptected));
