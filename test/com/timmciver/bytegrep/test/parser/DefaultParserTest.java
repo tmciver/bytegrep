@@ -258,7 +258,7 @@ public class DefaultParserTest {
         LiteralByte literal1 = new LiteralByte((byte)0xAA);
         
         // create a SequenceExpression from them
-        RegularExpression exptected = new ZeroOrOne(literal1);
+        RegularExpression expected = new ZeroOrOne(literal1);
         
         // parse it
         Parser parser = new DefaultParser();
@@ -269,6 +269,35 @@ public class DefaultParserTest {
             fail(ex.toString());
         }
         
-        assertTrue(actual.equals(exptected));
+        assertTrue(actual.equals(expected));
+    }
+    
+    @Test
+    public void testCompoundExpression() {
+        
+        // create the string to be parsed
+        String str = "(0x8F0x45)+0xAA?0x3C";
+        
+        // build the expexted RegularExpression
+        LiteralByte literal1 = new LiteralByte((byte)0x8F);
+        LiteralByte literal2 = new LiteralByte((byte)0x45);
+        LiteralByte literal3 = new LiteralByte((byte)0xAA);
+        LiteralByte literal4 = new LiteralByte((byte)0x3C);
+        RegularExpression re1 = new SequenceExpression(literal1, literal2);
+        re1 = new OneOrMore(re1);
+        RegularExpression re2 = new ZeroOrOne(literal3);
+        re2 = new SequenceExpression(re1, re2);
+        RegularExpression expected = new SequenceExpression(re2, literal4);
+        
+        // parse it
+        Parser parser = new DefaultParser();
+        RegularExpression actual = null;
+        try {
+            actual = parser.parse(str);
+        } catch (IOException ex) {
+            fail(ex.toString());
+        }
+        
+        assertTrue(actual.equals(expected));
     }
 }
