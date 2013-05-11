@@ -46,6 +46,7 @@ public class DefaultParser implements Parser {
     private Set<Character> firstOfR;
     private Set<Character> firstOfS;
     private Set<Character> firstOfT;
+    private Set<Character> followOfT;
 
     public DefaultParser() {
         
@@ -60,6 +61,11 @@ public class DefaultParser implements Parser {
         
         // first(R) = first(S) since S is not nullable
         firstOfR = firstOfS;
+        
+        // follow(T) = follow(R)
+        // follow(R) = {')', '$'}
+        followOfT = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(')', '$')));
     }
 
     @Override
@@ -157,7 +163,10 @@ public class DefaultParser implements Parser {
             reader.read();    // consume the '?'
             outRegex = new ZeroOrOne(inRegex);
         } else {
-            // just return inRegex
+            // sanity check: make sure nextChar is in follow(T)
+            if (!followOfT.contains(nextChar)) {
+                throw new MalformedInputException("Read unexpected character: " + nextChar);
+            }
             outRegex = inRegex;
         }
 
