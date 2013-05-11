@@ -22,6 +22,21 @@ import java.util.logging.Logger;
  * The default Parser implementation for ByteGrep.  The following defines
  * the grammar accepted by this parser.
  * 
+ * R ::= byte-literal
+ *     | (R)              // grouping
+ *     | RR               // sequence
+ *     | R|R              // alternation
+ *     | R*               // zero or more
+ *     | R+               // one or more
+ *     | R?               // zero or one
+ * 
+ * byte-literal ::= 0xXY  // defines a single byte where X and Y represent
+ *                        // hexadecimal digits.
+ * 
+ * The above grammar is left recursive.  DefaultParser is a predictive recursive
+ * descent parser which cannot handle a left recursive grammar.  The following
+ * grammar is equivalent to the above grammar but is left factored.
+ * 
  * R ::= ST
  * 
  * S ::= byte-literal
@@ -34,8 +49,7 @@ import java.util.logging.Logger;
  *     | R                // sequence
  *     | epsilon
  * 
- * byte-literal ::= 0xXY  // defines a single byte where X and Y represent
- *                        // hexadecimal digits.
+ * byte-literal           // as defined above
  * 
  * @author tim
  */
