@@ -22,34 +22,37 @@ import java.util.logging.Logger;
  * The default Parser implementation for ByteGrep.  The following defines
  * the grammar accepted by this parser.
  * 
- * R ::= byte-literal
+ * R ::= [byte-literal]
  *     | (R)              // grouping
  *     | RR               // sequence
  *     | R|R              // alternation
- *     | R*               // zero or more
- *     | R+               // one or more
- *     | R?               // zero or one
+ *     | R*T              // zero or more
+ *     | R+T              // one or more
+ *     | R?T              // zero or one
  * 
- * byte-literal ::= 0xXY  // defines a single byte where X and Y represent
- *                        // hexadecimal digits.
+ * T ::= R
+ *     | epsilon
+ *
+ * [byte-literal] ::= 0xXY  // defines a single byte where X and Y represent
+ *                          // hexadecimal digits.
  * 
  * The above grammar is left recursive.  DefaultParser is a predictive recursive
  * descent parser which cannot handle a left recursive grammar.  The following
- * grammar is equivalent to the above grammar but is left factored.
+ * grammar is equivalent to the above grammar with the left recursion removed.
  * 
- * R ::= ST
+ * S ::= R$                // start symbol; R followed by end-of-input
  * 
- * S ::= byte-literal
- *     | (R)              // grouping
+ * R ::= [byte-literal]T
+ *     | (R)T
  * 
- * T ::= |R               // alternation
- *     | *                // zero or more
- *     | +                // one or more
- *     | ?                // zero or one
- *     | R                // sequence
+ * T ::= RT                // sequence
+ *     | |RT               // alternation
+ *     | *T                // zero or more
+ *     | +T                // one or more
+ *     | ?T                // zero or one
  *     | epsilon
  * 
- * byte-literal           // as defined above
+ * [byte-literal]         // as defined above
  * 
  * @author tim
  */
@@ -58,35 +61,29 @@ public class DefaultParser implements Parser {
     private final static Logger logger = Logger.getLogger(DefaultParser.class.getName());
 
     private Set<Character> firstOfR;
-    private Set<Character> firstOfS;
-    private Set<Character> firstOfT;
-    private Set<Character> followOfT;
+    private Set<Character> followOfR;
 
     public DefaultParser() {
         
-        // initialize firstOfS
-        firstOfS = Collections.unmodifiableSet(
+        // initialize firstOfR
+        firstOfR = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList('0', '(')));
         
-        // initialize firstOfT
-        firstOfT = new HashSet<>(firstOfS);     // first(T) contains first(S), plus some other stuff
-        firstOfT.addAll(Arrays.asList('|', '*', '+', '?', '$'));
-        firstOfT = Collections.unmodifiableSet(firstOfT);
-        
-        // first(R) = first(S) since S is not nullable
-        firstOfR = firstOfS;
-        
-        // follow(T) = follow(R)
-        // follow(R) = {')', '$'}
-        followOfT = Collections.unmodifiableSet(
-            new HashSet<>(Arrays.asList(')', '$')));
+        // and followOfR
+        followOfR = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(')')));
     }
-
+    
     @Override
     public RegularExpression parse(String s) throws IOException {
         
         // create a PushbackReader from the given string
         PushbackReader reader = new PushbackReader(new StringReader(s));
+
+        return parseS(reader);
+    }
+
+    public RegularExpression parseS(PushbackReader reader) throws IOException {
         
         RegularExpression re = parseR(reader);
         
@@ -100,18 +97,6 @@ public class DefaultParser implements Parser {
     }
     
     private RegularExpression parseR(PushbackReader reader) throws IOException {
-        
-        // parse S
-        RegularExpression re = parseS(reader);
-        
-        // pass the parsed regular expression on to the T parser
-        re = parseT(re, reader);
-        
-        // return it
-        return re;
-    }
-    
-    private RegularExpression parseS(PushbackReader reader) throws IOException {
         
         // read the next character of input
         char next = (char)reader.read();
@@ -132,6 +117,9 @@ public class DefaultParser implements Parser {
                 logger.log(Level.SEVERE, "Read unexpected character: " + next);
                 throw new MalformedInputException("Read unexpected character: " + next);
         }
+        
+        // now parse T
+        re = parseT(re, reader);
 
         return re;
     }
@@ -144,47 +132,54 @@ public class DefaultParser implements Parser {
         
         // check for end-of-input
         if (next == -1) {
-            nextChar = '$';
-        } else {
-            // push back the read char if we're not at the end
-            reader.unread(next);
+            // end of input; choose epsilon production; we're done
+            return inRegex;
         }
         
         RegularExpression outRegex = null;
         
         // which T production to use?
         if (firstOfR.contains(nextChar)) {
+            // we've got another R
+            // push back the read character so that it can be read by parseR
+            reader.unread(next);
             RegularExpression fromR = parseR(reader);
             outRegex = new SequenceExpression(inRegex, fromR);
-        } else if (nextChar == '$') {
-            // end of input; we're done
-            outRegex = inRegex;
+            logger.log(Level.INFO, "Parsed regular expression: " + outRegex);
         } else if (nextChar == '|') {
             // alternation
-            reader.read();    // re-read the '|' character to remove it from the input
             RegularExpression fromR = parseR(reader);
             outRegex = new AlternationExpression(inRegex, fromR);
+            logger.log(Level.INFO, "Parsed alternation regular expression: " + outRegex);
         } else if (nextChar == '*') {
             // zero or more
-            reader.read();    // consume the '*'
             outRegex = new ZeroOrMore(inRegex);
+            logger.log(Level.INFO, "Parsed zero or more regular expression: " + outRegex);
         } else if (nextChar == '+') {
             // one or more
-            reader.read();    // consume the '+'
             outRegex = new OneOrMore(inRegex);
+            logger.log(Level.INFO, "Parsed one or more regular expression: " + outRegex);
         } else if (nextChar == '?') {
             // zero or one
-            reader.read();    // consume the '?'
             outRegex = new ZeroOrOne(inRegex);
+            logger.log(Level.INFO, "Parsed zero or one regular expression: " + outRegex);
         } else {
-            // sanity check: make sure nextChar is in follow(T)
-            if (!followOfT.contains(nextChar)) {
+            // it's an error if nextChar is not in followOfR
+            if (!followOfR.contains(nextChar)) {
                 throw new MalformedInputException("Read unexpected character: " + nextChar);
             }
-            outRegex = inRegex;
-        }
+            
+            // push back the read character so that it can be read by parseR
+            reader.unread(next);
 
-        return outRegex;
+            // since the next character is in follow(R), we must choose the
+            // epsilon production of T
+            return inRegex;
+        }
+        
+        // The T productions are right recursive (except for the epsilon
+        // transition which has already been accoutned for).
+        return parseT(outRegex, reader);
     }
     
     private RegularExpression parseByteLiteral(PushbackReader reader) throws IOException {
@@ -215,8 +210,13 @@ public class DefaultParser implements Parser {
         // cast to a byte
         byte byteVal = (byte)val;
         
+        RegularExpression byteLiteral = new LiteralByte(byteVal);
+        
+        // log it
+        logger.log(Level.INFO, "Created byte literal regular expression: " + byteLiteral);
+        
         // return a LiteralByte regex
-        return new LiteralByte(byteVal);
+        return byteLiteral;
     }
     
     private RegularExpression parseGrouping(PushbackReader reader) throws IOException {
@@ -227,6 +227,9 @@ public class DefaultParser implements Parser {
             throw new MalformedInputException("Expected '(' but read '" + next + "'");
         }
         
+        // log start of group
+        logger.log(Level.INFO, "Start parsing regular expression grouping.");
+        
         // parse the grouped regular expression
         RegularExpression re = parseR(reader);
         
@@ -235,6 +238,9 @@ public class DefaultParser implements Parser {
         if (next != ')') {
             throw new MalformedInputException("Expected ')' but read '" + next + "'");
         }
+        
+        // log end of group
+        logger.log(Level.INFO, "Finished parsing regular expression grouping.");
         
         return re;
     }

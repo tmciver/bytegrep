@@ -286,8 +286,8 @@ public class DefaultParserTest {
         RegularExpression re1 = new SequenceExpression(literal1, literal2);
         re1 = new OneOrMore(re1);
         RegularExpression re2 = new ZeroOrOne(literal3);
-        re2 = new SequenceExpression(re1, re2);
-        RegularExpression expected = new SequenceExpression(re2, literal4);
+        re2 = new SequenceExpression(re2, literal4);
+        RegularExpression expected = new SequenceExpression(re1, re2);
         
         // parse it
         Parser parser = new DefaultParser();
