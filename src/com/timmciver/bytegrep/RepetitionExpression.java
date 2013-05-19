@@ -1,10 +1,10 @@
 
 package com.timmciver.bytegrep;
 
-import java.io.InputStream;
-
 /**
- *
+ * A regular expression that matches if the given regular expression
+ * matches a number of times between minMatches and maxMatches
+ * inclusive.
  * @author tim
  */
 public class RepetitionExpression extends RegularExpression {
@@ -35,28 +35,31 @@ public class RepetitionExpression extends RegularExpression {
     }
 
     @Override
-    protected boolean internalMatch(InputStream in) {
+    public int match(byte[] data, int offset) {
         
         // a) If the first one doesn't match and minMatches is equal to zero, it's
         // a match. b) If the first one is a match and maxMatches is equal to
         // one, then it's a match. c) If minMatches is greater than zero, then
         // it's not a match.
-        boolean matched = expr.match(in);
+        int numMatches = expr.match(data, offset);
+        boolean matched = numMatches > 0;
         if (!matched && minMatches == 0) {
-            return true;
+            return numMatches;
         } else if (matched && maxMatches == 1) {
-            return true;
+            return numMatches;
         } else if (!matched) {
-            return false;
+            return 0;
         }
         
         // consume input while there's a match
-        while (matched) {
-            matched = expr.match(in);
+        int previousMatches = 0;
+        while (numMatches > previousMatches) {
+            previousMatches = numMatches;
+            numMatches += expr.match(data, offset + numMatches);
         }
         
         // it's a match no matter what now
-        return true;
+        return numMatches;
     }
 
     @Override

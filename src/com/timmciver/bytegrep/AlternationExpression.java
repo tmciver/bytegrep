@@ -1,10 +1,9 @@
 
 package com.timmciver.bytegrep;
 
-import java.io.InputStream;
-
 /**
- *
+ * A regular expression that matches if either of its two sub
+ * expressions match.
  * @author tim
  */
 public class AlternationExpression extends RegularExpression {
@@ -18,8 +17,9 @@ public class AlternationExpression extends RegularExpression {
     }
 
     @Override
-    public boolean internalMatch(InputStream in) {
-        return expr1.match(in) || expr2.match(in);
+    public int match(byte[] data, int offset) {
+        int numMatches = expr1.match(data, offset);
+        return numMatches > 0 ? numMatches : expr2.match(data, offset);
     }
 
     public RegularExpression getFirstExpression() {

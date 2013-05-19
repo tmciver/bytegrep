@@ -12,8 +12,6 @@ import com.timmciver.bytegrep.AlternationExpression;
 import com.timmciver.bytegrep.SequenceExpression;
 import com.timmciver.bytegrep.ZeroOrMore;
 import com.timmciver.bytegrep.ZeroOrOne;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -53,16 +51,15 @@ public class RegularExpressionTest {
         
         // create a ByteArrayInputStream
         byte[] data = new byte[]{literal, (byte)0x8F, (byte)0x25};
-        InputStream in = new ByteArrayInputStream(data);
         
         // create the regular expression
         RegularExpression re = new LiteralByte(literal);
         
         // the first byte should match
-        Assert.assertTrue(re.match(in));
+        Assert.assertEquals(1, re.match(data, 0));
         
         // the second byte should not match
-        Assert.assertFalse(re.match(in));
+        Assert.assertEquals(0, re.match(data, 1));
     }
     
     @Test
@@ -75,29 +72,29 @@ public class RegularExpressionTest {
         // create an AlternationExpression from them
         RegularExpression ae = new AlternationExpression(literal1, literal2);
         
-        // create a ByteArrayInputStream whose first byte will match literal1
-        InputStream in1 = new ByteArrayInputStream(new byte[]{literal1.getLiteralByte(), (byte)0x8F, (byte)0x25});
+        // create a byte array whose first byte will match literal1
+        byte[] data1 = new byte[]{literal1.getLiteralByte(), (byte)0x8F, (byte)0x25};
         
-        // create a ByteArrayInputStream whose first byte will match literal2
-        InputStream in2 = new ByteArrayInputStream(new byte[]{literal2.getLiteralByte(), (byte)0x8F, (byte)0x25});
+        // create a byte array whose first byte will match literal2
+        byte[] data2 = new byte[]{literal2.getLiteralByte(), (byte)0x8F, (byte)0x25};
         
-        // finally create a ByteArrayInputStream that will not match
-        InputStream in3 = new ByteArrayInputStream(new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25});
+        // finally create a byte array that will not match
+        byte[] data3 = new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25};
         
-        // verify that ae matches the first byte of in1
-        Assert.assertTrue(ae.match(in1));
-        
-        // verify that it does NOT match the second byte
-        Assert.assertFalse(ae.match(in1));
-        
-        // verify that ae matches the first byte of in2
-        Assert.assertTrue(ae.match(in2));
+        // verify that ae matches the first byte of data1
+        Assert.assertEquals(1, ae.match(data1, 0));
         
         // verify that it does NOT match the second byte
-        Assert.assertFalse(ae.match(in2));
+        Assert.assertEquals(0, ae.match(data1, 1));
         
-        // verify that it does not match in3
-        Assert.assertFalse(ae.match(in3));
+        // verify that ae matches the first byte of data2
+        Assert.assertEquals(1, ae.match(data2, 0));
+        
+        // verify that it does NOT match the second byte
+        Assert.assertEquals(0, ae.match(data2, 1));
+        
+        // verify that it does not match data3
+        Assert.assertEquals(0, ae.match(data3, 0));
     }
     
     @Test
@@ -112,21 +109,21 @@ public class RegularExpressionTest {
         RegularExpression re2 = new SequenceExpression(literal2, literal3);
         RegularExpression seq = new SequenceExpression(literal1, re2);
         
-        // create a ByteArrayInputStream from these byte literals
-        InputStream in1 = new ByteArrayInputStream(new byte[]{literal1.getLiteralByte(), literal2.getLiteralByte(), literal3.getLiteralByte()});
+        // create a byte array from these byte literals
+        byte[] data1 = new byte[]{literal1.getLiteralByte(), literal2.getLiteralByte(), literal3.getLiteralByte()};
         
-        // create another ByteArrayInputStream with non-matching data
-        InputStream in2 = new ByteArrayInputStream(new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25});
+        // create another byte array with non-matching data
+        byte[] data2 = new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25};
         
-        // seq should match in1
-        Assert.assertTrue(seq.match(in1));
+        // seq should match data1
+        Assert.assertEquals(3, seq.match(data1, 0));
         
-        // seq should not match in2
-        Assert.assertFalse(seq.match(in2));
+        // seq should not match data2
+        Assert.assertEquals(0, seq.match(data2, 0));
     }
     
     @Test
-    public void testRepetition() {
+    public void testOneOrMore() {
         
         // create a couple of literal bytes
         LiteralByte literal = new LiteralByte((byte)0xAA);
@@ -134,26 +131,26 @@ public class RegularExpressionTest {
         // create a RepetitionExpression from it
         RegularExpression re = new OneOrMore(literal);
         
-        // create a ByteArrayInputStream whose first byte will match the repetition
-        InputStream in1 = new ByteArrayInputStream(new byte[]{literal.getLiteralByte(), (byte)0x8F, (byte)0x25});
+        // create a byte array whose first byte will match the repetition
+        byte[] data1 = new byte[]{literal.getLiteralByte(), (byte)0x8F, (byte)0x25};
         
-        // create a ByteArrayInputStream all of whose bytes are the literal
-        InputStream in2 = new ByteArrayInputStream(new byte[]{literal.getLiteralByte(), literal.getLiteralByte(), literal.getLiteralByte()});
+        // create a byte array all of whose bytes are the literal
+        byte[] data2 = new byte[]{literal.getLiteralByte(), literal.getLiteralByte(), literal.getLiteralByte()};
         
-        // finally create a ByteArrayInputStream that will not match
-        InputStream in3 = new ByteArrayInputStream(new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25});
+        // finally create a byte array that will not match
+        byte[] data3 = new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25};
         
-        // verify that ae matches the first byte of in1
-        Assert.assertTrue(re.match(in1));
+        // verify that ae matches the first byte of data1
+        Assert.assertEquals(1, re.match(data1, 0));
         
         // verify that it does NOT match the second byte
-        Assert.assertFalse(re.match(in1));
+        Assert.assertEquals(0, re.match(data1, 1));
         
-        // verify that re matches in2
-        Assert.assertTrue(re.match(in2));
+        // verify that re matches data2
+        Assert.assertEquals(3, re.match(data2, 0));
         
-        // verify that it does not match in3
-        Assert.assertFalse(re.match(in3));
+        // verify that it does not match data3
+        Assert.assertEquals(0, re.match(data3, 0));
     }
     
     @Test
