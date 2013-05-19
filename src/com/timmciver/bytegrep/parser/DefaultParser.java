@@ -83,7 +83,7 @@ public class DefaultParser implements Parser {
         return parseS(reader);
     }
 
-    public RegularExpression parseS(PushbackReader reader) throws IOException {
+    private RegularExpression parseS(PushbackReader reader) throws IOException {
         
         RegularExpression re = parseR(reader);
         
