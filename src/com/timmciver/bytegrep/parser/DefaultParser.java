@@ -52,7 +52,21 @@ import java.util.logging.Logger;
  *     | ?T                // zero or one
  *     | epsilon
  * 
- * [byte-literal]         // as defined above
+ * [byte-literal]          // as defined above
+ * 
+ * The following gives information of first and follow sets.
+ * 
+ * first(R) = {'(', '0'}
+ * first(T) = first(R) + {'|', '*', '+', '?'}
+ *          = {'(', '0', '|', '*', '+', '?'}
+ * follow(R) = {')', '$'} + first(T)
+ *           = {'(', ')', '0', '|', '*', '+', '?', '$'}
+ * follow(T) = follow(R)
+ * 
+ * The epsilon production for T is chosen when the next character read is in
+ * follow(T) but not in first(T). This set is as follows:
+ * 
+ * follow(T) - first(T) = {')', '$'}
  * 
  * @author tim
  */
@@ -61,7 +75,7 @@ public class DefaultParser implements Parser {
     private final static Logger logger = Logger.getLogger(DefaultParser.class.getName());
 
     private Set<Character> firstOfR;
-    private Set<Character> followOfR;
+    private Set<Character> followOfTMinusFirstOfT;
 
     public DefaultParser() {
         
@@ -69,9 +83,9 @@ public class DefaultParser implements Parser {
         firstOfR = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList('0', '(')));
         
-        // and followOfR
-        followOfR = Collections.unmodifiableSet(
-            new HashSet<>(Arrays.asList(')')));
+        // follow(T) - first(T) = {'(', '$'}
+        followOfTMinusFirstOfT = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(')', '$')));
     }
     
     @Override
@@ -114,6 +128,7 @@ public class DefaultParser implements Parser {
                 re = parseGrouping(reader);
                 break;
             default:
+                // next character was not in first(R)
                 logger.log(Level.SEVERE, "Read unexpected character: " + next);
                 throw new MalformedInputException("Read unexpected character: " + next);
         }
@@ -132,8 +147,8 @@ public class DefaultParser implements Parser {
         
         // check for end-of-input
         if (next == -1) {
-            // end of input; choose epsilon production; we're done
-            return inRegex;
+            // end of input
+            nextChar = '$';
         }
         
         RegularExpression outRegex = null;
@@ -163,22 +178,23 @@ public class DefaultParser implements Parser {
             // zero or one
             outRegex = new ZeroOrOne(inRegex);
             logger.log(Level.INFO, "Parsed zero or one regular expression: " + outRegex);
-        } else {
-            // it's an error if nextChar is not in followOfR
-            if (!followOfR.contains(nextChar)) {
-                throw new MalformedInputException("Read unexpected character: " + nextChar);
-            }
+        } else if (followOfTMinusFirstOfT.contains(nextChar)) {
+            // epsilon production
             
-            // push back the read character so that it can be read by parseR
-            reader.unread(next);
+            // here we must push back any characters from followOfTMinusFirstOfT
+            // (except $) so that it may be properly read later.
+            if (nextChar != '$') {
+                reader.unread(next);
+            }
 
-            // since the next character is in follow(R), we must choose the
-            // epsilon production of T
             return inRegex;
+        } else {
+            // should not get here
+            throw new MalformedInputException("Read unexpected character: " + nextChar + ", val = " + next);
         }
         
         // The T productions are right recursive (except for the epsilon
-        // transition which has already been accoutned for).
+        // transition which has already been accounted for).
         return parseT(outRegex, reader);
     }
     
