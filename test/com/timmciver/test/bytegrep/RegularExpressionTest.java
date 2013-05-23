@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.timmciver.test.bytegrep;
 
 import com.timmciver.bytegrep.LiteralByte;
@@ -12,6 +9,8 @@ import com.timmciver.bytegrep.AlternationExpression;
 import com.timmciver.bytegrep.SequenceExpression;
 import com.timmciver.bytegrep.ZeroOrMore;
 import com.timmciver.bytegrep.ZeroOrOne;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -55,11 +54,17 @@ public class RegularExpressionTest {
         // create the regular expression
         RegularExpression re = new LiteralByte(literal);
         
+        List<Byte> matchedBytes = new ArrayList<>();
+        
         // the first byte should match
-        Assert.assertEquals(1, re.match(data, 0));
+        Assert.assertTrue(re.match(data, 0, matchedBytes));
+        
+        // make sure matchedBytes is correct
+        Assert.assertTrue(matchedBytes.size() == 1);
+        Assert.assertEquals(matchedBytes.get(0).byteValue(), literal);
         
         // the second byte should not match
-        Assert.assertEquals(0, re.match(data, 1));
+        Assert.assertFalse(re.match(data, 1, matchedBytes));
     }
     
     @Test
@@ -81,20 +86,27 @@ public class RegularExpressionTest {
         // finally create a byte array that will not match
         byte[] data3 = new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25};
         
+        List<Byte> matchedBytes = new ArrayList<>();
+        
         // verify that ae matches the first byte of data1
-        Assert.assertEquals(1, ae.match(data1, 0));
+        Assert.assertTrue(ae.match(data1, 0, matchedBytes));
+        
+        // make sure matchedBytes is correct
+        Assert.assertTrue(matchedBytes.size() == 1);
+        Assert.assertEquals(matchedBytes.get(0).byteValue(), literal1.getLiteralByte());
         
         // verify that it does NOT match the second byte
-        Assert.assertEquals(0, ae.match(data1, 1));
+        Assert.assertFalse(ae.match(data1, 1, matchedBytes));
         
         // verify that ae matches the first byte of data2
-        Assert.assertEquals(1, ae.match(data2, 0));
+        matchedBytes.clear();
+        Assert.assertTrue(ae.match(data2, 0, matchedBytes));
         
         // verify that it does NOT match the second byte
-        Assert.assertEquals(0, ae.match(data2, 1));
+        Assert.assertFalse(ae.match(data2, 1, matchedBytes));
         
         // verify that it does not match data3
-        Assert.assertEquals(0, ae.match(data3, 0));
+        Assert.assertFalse(ae.match(data3, 0, matchedBytes));
     }
     
     @Test
@@ -116,10 +128,17 @@ public class RegularExpressionTest {
         byte[] data2 = new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25};
         
         // seq should match data1
-        Assert.assertEquals(3, seq.match(data1, 0));
+        List<Byte> matchedBytes = new ArrayList<>();
+        Assert.assertTrue(seq.match(data1, 0, matchedBytes));
+        
+        // make sure matchedBytes is equal to the input array
+        Assert.assertEquals(data1.length, matchedBytes.size());
+        for (int i = 0; i < data1.length; i++) {
+            Assert.assertEquals(data1[i], matchedBytes.get(i).byteValue());
+        }
         
         // seq should not match data2
-        Assert.assertEquals(0, seq.match(data2, 0));
+        Assert.assertFalse(seq.match(data2, 0, matchedBytes));
     }
     
     @Test
@@ -141,16 +160,28 @@ public class RegularExpressionTest {
         byte[] data3 = new byte[]{(byte)0xAC, (byte)0x8F, (byte)0x25};
         
         // verify that ae matches the first byte of data1
-        Assert.assertEquals(1, re.match(data1, 0));
+        List<Byte> matchedBytes = new ArrayList<>();
+        Assert.assertTrue(re.match(data1, 0, matchedBytes));
+        
+        // make sure matchedBytes is correct
+        Assert.assertTrue(matchedBytes.size() == 1);
+        Assert.assertEquals(matchedBytes.get(0).byteValue(), literal.getLiteralByte());
         
         // verify that it does NOT match the second byte
-        Assert.assertEquals(0, re.match(data1, 1));
+        Assert.assertFalse(re.match(data1, 1, matchedBytes));
         
         // verify that re matches data2
-        Assert.assertEquals(3, re.match(data2, 0));
+        matchedBytes.clear();
+        Assert.assertTrue(re.match(data2, 0, matchedBytes));
         
+        // make sure matchedBytes is correct
+        Assert.assertTrue(matchedBytes.size() == 3);
+        for (int i = 0; i < 3; i++) {
+            Assert.assertEquals(matchedBytes.get(i).byteValue(), literal.getLiteralByte());
+        }
+
         // verify that it does not match data3
-        Assert.assertEquals(0, re.match(data3, 0));
+        Assert.assertFalse(re.match(data3, 0, matchedBytes));
     }
     
     @Test

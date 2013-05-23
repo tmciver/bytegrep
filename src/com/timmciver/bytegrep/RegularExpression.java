@@ -1,6 +1,8 @@
 
 package com.timmciver.bytegrep;
 
+import java.util.List;
+
 /**
  * Parent class for all regular expressions.
  * @author tim
@@ -12,9 +14,12 @@ public abstract class RegularExpression {
      * @param data input byte array
      * @param offset the byte offset into the data array at which matching
      * should begin
-     * @return the number of bytes matched
+     * @param matchedBytes a list of the bytes matched so far. Each
+     * RegularExpression implementation should add the bytes that are matched to
+     * this list.
+     * @return true if the RegularExpression matched the input, false otherwise.
      */
-    public abstract int match(byte[] data, int offset);
+    public abstract boolean match(byte[] data, int offset, List<Byte> matchedBytes);
     
     @Override
     public abstract boolean equals(Object o);

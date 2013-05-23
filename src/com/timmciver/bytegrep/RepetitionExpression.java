@@ -1,6 +1,8 @@
 
 package com.timmciver.bytegrep;
 
+import java.util.List;
+
 /**
  * A regular expression that matches if the given regular expression
  * matches a number of times between minMatches and maxMatches
@@ -35,31 +37,31 @@ public class RepetitionExpression extends RegularExpression {
     }
 
     @Override
-    public int match(byte[] data, int offset) {
+    public boolean match(byte[] data, int offset, List<Byte> matchedBytes) {
         
         // a) If the first one doesn't match and minMatches is equal to zero, it's
         // a match. b) If the first one is a match and maxMatches is equal to
         // one, then it's a match. c) If minMatches is greater than zero, then
         // it's not a match.
-        int numMatches = expr.match(data, offset);
-        boolean matched = numMatches > 0;
+        int numBeforeBytes = matchedBytes.size();
+        boolean matched = expr.match(data, offset, matchedBytes);
         if (!matched && minMatches == 0) {
-            return numMatches;
+            return true;
         } else if (matched && maxMatches == 1) {
-            return numMatches;
+            return true;
         } else if (!matched) {
-            return 0;
+            return false;
         }
         
         // consume input while there's a match
-        int previousMatches = 0;
-        while (numMatches > previousMatches) {
-            previousMatches = numMatches;
-            numMatches += expr.match(data, offset + numMatches);
+        boolean stillMatches = true;
+        while (stillMatches) {
+            int newOffset = offset + matchedBytes.size() - numBeforeBytes;
+            stillMatches = expr.match(data, newOffset, matchedBytes);
         }
         
         // it's a match no matter what now
-        return numMatches;
+        return true;
     }
 
     @Override

@@ -1,6 +1,8 @@
 
 package com.timmciver.bytegrep;
 
+import java.util.List;
+
 /**
  * A regular expression that matches if either of its two sub
  * expressions match.
@@ -17,9 +19,13 @@ public class AlternationExpression extends RegularExpression {
     }
 
     @Override
-    public int match(byte[] data, int offset) {
-        int numMatches = expr1.match(data, offset);
-        return numMatches > 0 ? numMatches : expr2.match(data, offset);
+    public boolean match(byte[] data, int offset, List<Byte> matchedBytes) {
+        
+        if (expr1.match(data, offset, matchedBytes)) {
+            return true;
+        }
+        
+        return expr2.match(data, offset, matchedBytes);
     }
 
     public RegularExpression getFirstExpression() {

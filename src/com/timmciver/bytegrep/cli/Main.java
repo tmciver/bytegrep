@@ -4,13 +4,12 @@ package com.timmciver.bytegrep.cli;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.parser.DefaultParser;
 import com.timmciver.bytegrep.parser.Parser;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -48,19 +47,20 @@ public class Main {
         in.read(data);
         
         // try matching at every byte
-        int numMatched = 0;
-        int byteVal;
+        //int numMatched = 0;
+        //int byteVal;
         int offset;
+        boolean matched = false;
+        List<Byte> matchedBytes = new ArrayList<>();
         for (offset = 0; offset < data.length; ++offset) {
-            numMatched = re.match(data, offset);
-            if (numMatched > 0) {
+            if ((matched = re.match(data, offset, matchedBytes))) {
                 break;
             }
-            //System.out.println("Read byte: " + byteVal);
+            matchedBytes.clear();
         }
         
         // tell user if we found a match or not
-        if (numMatched > 0) {
+        if (matched) {
             System.out.println("Found match at byte offset " + offset);
         } else {
             System.out.println("No match found.");

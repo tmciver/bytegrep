@@ -1,6 +1,8 @@
 
 package com.timmciver.bytegrep;
 
+import java.util.List;
+
 /**
  * Matches a sequence of two regular expressions.
  * @author tim
@@ -16,15 +18,16 @@ public class SequenceExpression extends RegularExpression {
     }
 
     @Override
-    public int match(byte[] data, int offset) {
-        int numMatches1 = expr1.match(data, offset);
+    public boolean match(byte[] data, int offset, List<Byte> matchedBytes) {
+        int numMatchedBytes = matchedBytes.size();
         
-        if (numMatches1 == 0) {
-            return 0;
+        if (!expr1.match(data, offset, matchedBytes)) {
+            return false;
         }
         
-        int numMatches2 = expr2.match(data, offset + numMatches1);
-        return numMatches1 + numMatches2;
+        int newOffset = offset + matchedBytes.size() - numMatchedBytes;
+        
+        return expr2.match(data, newOffset, matchedBytes);
     }
 
     public RegularExpression getFirstExpression() {

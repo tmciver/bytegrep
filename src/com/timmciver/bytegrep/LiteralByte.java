@@ -1,6 +1,8 @@
 
 package com.timmciver.bytegrep;
 
+import java.util.List;
+
 /**
  * A regular expression to match a single byte.
  * @author tim
@@ -18,13 +20,19 @@ public class LiteralByte extends RegularExpression {
     }
 
     @Override
-    public int match(byte[] data, int offset) {
+    public boolean match(byte[] data, int offset, List<Byte> matchedBytes) {
         
         if (offset >= data.length) {
-            return 0;
+            return false;
         }
         
-        return (data[offset] == literal) ? 1 : 0;
+        boolean matched = data[offset] == literal;
+        
+        if (matched) {
+            matchedBytes.add(literal);
+        }
+        
+        return matched;
     }
 
     public byte getLiteralByte() {
