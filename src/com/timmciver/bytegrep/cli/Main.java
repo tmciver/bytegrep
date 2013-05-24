@@ -4,10 +4,12 @@ package com.timmciver.bytegrep.cli;
 import com.timmciver.bytegrep.RegularExpression;
 import com.timmciver.bytegrep.parser.DefaultParser;
 import com.timmciver.bytegrep.parser.Parser;
-import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -38,23 +40,28 @@ public class Main {
             System.exit(1);
         }
         
-        // create a FileInputStream from the given file path
-        InputStream in = new BufferedInputStream(new FileInputStream(filePath));
+        // read data from the file
+        File file = new File(filePath);
+        byte[] data = new byte[(int)file.length()];
+        InputStream in = new FileInputStream(file);
+        in.read(data);
         
         // try matching at every byte
-        long index = -1;
-        boolean matched;
-        int byteVal;
-        do {
-            ++index;
-            matched = re.match(in);
-            byteVal = in.read();
-            //System.out.println("Read byte: " + byteVal);
-        } while (!matched && byteVal != -1);
+        //int numMatched = 0;
+        //int byteVal;
+        int offset;
+        boolean matched = false;
+        List<Byte> matchedBytes = new ArrayList<>();
+        for (offset = 0; offset < data.length; ++offset) {
+            if ((matched = re.match(data, offset, matchedBytes))) {
+                break;
+            }
+            matchedBytes.clear();
+        }
         
         // tell user if we found a match or not
         if (matched) {
-            System.out.println("Found match at byte offset " + Long.toHexString(index));
+            System.out.println("Found match at byte offset " + offset);
         } else {
             System.out.println("No match found.");
         }

@@ -1,13 +1,10 @@
 
 package com.timmciver.bytegrep;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 
 /**
- *
+ * A regular expression to match a single byte.
  * @author tim
  */
 public class LiteralByte extends RegularExpression {
@@ -23,16 +20,19 @@ public class LiteralByte extends RegularExpression {
     }
 
     @Override
-    public boolean internalMatch(InputStream in) {
-        byte nextByte;
-        try {
-            nextByte = (byte)in.read();
-        } catch (IOException ex) {
-            Logger.getLogger(LiteralByte.class.getName()).log(Level.SEVERE, null, ex);
+    public boolean match(byte[] data, int offset, List<Byte> matchedBytes) {
+        
+        if (offset >= data.length) {
             return false;
         }
         
-        return (nextByte == literal) ? true : false;
+        boolean matched = data[offset] == literal;
+        
+        if (matched) {
+            matchedBytes.add(literal);
+        }
+        
+        return matched;
     }
 
     public byte getLiteralByte() {
