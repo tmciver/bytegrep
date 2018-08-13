@@ -1,8 +1,8 @@
-#ByteGrep
+# ByteGrep
 
 A Java library/executable used for finding byte sequences in files.  Please note that this project was created as a learning exercise.  It is not thoroughly implemented and is not very fast and so it's not recommended to be used in production.
 
-#Usage
+# Usage
 
 The jar file produced from this project is executable.  Two command line arguments are needed.  The first is the regular expression describing the sequence of bytes to find.  The second argument is a path to the file to be searched:
 
